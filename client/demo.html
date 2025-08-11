@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BattleBucks API Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .demo-header h1 {
+            font-size: 3rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .demo-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .feature-description {
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-list li {
+            padding: 0.25rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #44ff44;
+            font-weight: bold;
+        }
+
+        .demo-actions {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: #000;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 0 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .api-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 2rem 0;
+        }
+
+        .api-info h3 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .endpoint {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .method {
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .method.get { background: #61affe; }
+        .method.post { background: #49cc90; }
+        .method.put { background: #fca130; }
+        .method.delete { background: #f93e3e; }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .tech-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .tech-item i {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .demo-header h1 {
+                font-size: 2rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                display: block;
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1><i class="fas fa-gamepad"></i> BattleBucks</h1>
+            <p>Complete Gaming Platform API with Full-Featured Web Client</p>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3 class="feature-title">Authentication System</h3>
+                <p class="feature-description">Secure JWT-based authentication with automatic token refresh</p>
+                <ul class="feature-list">
+                    <li>User registration with validation</li>
+                    <li>Secure login with JWT tokens</li>
+                    <li>Automatic token refresh</li>
+                    <li>Session management</li>
+                    <li>Password security requirements</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h3 class="feature-title">Store Management</h3>
+                <p class="feature-description">Complete e-commerce functionality for gaming items</p>
+                <ul class="feature-list">
+                    <li>Browse items with pagination</li>
+                    <li>Advanced filtering & search</li>
+                    <li>Category organization</li>
+                    <li>Rarity-based pricing</li>
+                    <li>Featured item showcase</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3 class="feature-title">Purchase System</h3>
+                <p class="feature-description">Comprehensive gem-based purchasing with transaction tracking</p>
+                <ul class="feature-list">
+                    <li>Secure purchase processing</li>
+                    <li>Gem balance validation</li>
+                    <li>Transaction history</li>
+                    <li>Purchase analytics</li>
+                    <li>Fulfillment tracking</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <h3 class="feature-title">Inventory Management</h3>
+                <p class="feature-description">Complete item management with usage tracking</p>
+                <ul class="feature-list">
+                    <li>Inventory overview & statistics</li>
+                    <li>Item quantity tracking</li>
+                    <li>Consumable item usage</li>
+                    <li>Category organization</li>
+                    <li>Real-time updates</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-ninja"></i>
+                </div>
+                <h3 class="feature-title">Character Profiles</h3>
+                <p class="feature-description">Multi-game character management with equipment system</p>
+                <ul class="feature-list">
+                    <li>Platform-wide characters</li>
+                    <li>Game-specific profiles</li>
+                    <li>Character customization</li>
+                    <li>Equipment management</li>
+                    <li>Profile activation</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="feature-title">Analytics Dashboard</h3>
+                <p class="feature-description">Comprehensive user statistics and activity tracking</p>
+                <ul class="feature-list">
+                    <li>Real-time user statistics</li>
+                    <li>Purchase history analysis</li>
+                    <li>Inventory value tracking</li>
+                    <li>Activity summaries</li>
+                    <li>Performance metrics</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-actions">
+            <a href="index.html" class="btn">
+                <i class="fas fa-play"></i>
+                Launch Application
+            </a>
+            <a href="http://localhost:3001/api/docs" class="btn btn-secondary" target="_blank">
+                <i class="fas fa-book"></i>
+                API Documentation
+            </a>
+        </div>
+
+        <div class="api-info">
+            <h3><i class="fas fa-code"></i> API Endpoints Overview</h3>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <code>/api/v1/auth/register</code>
+                <span>User Registration</span>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <code>/api/v1/auth/login</code>
+                <span>User Login</span>
+            </div>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <code>/api/v1/store/items</code>
+                <span>Browse Store Items</span>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <code>/api/v1/purchases</code>
+                <span>Create Purchase</span>
+            </div>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <code>/api/v1/inventory</code>
+                <span>Get User Inventory</span>
+            </div>
+            <div class="endpoint">
+                <span class="method get">GET</span>
+                <code>/api/v1/characters</code>
+                <span>Get Character Profiles</span>
+            </div>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <code>/api/v1/inventory/:itemId/use</code>
+                <span>Use Consumable Item</span>
+            </div>
+        </div>
+
+        <div class="api-info">
+            <h3><i class="fas fa-laptop-code"></i> Technology Stack</h3>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <i class="fab fa-node-js"></i>
+                    <h4>Node.js + NestJS</h4>
+                    <p>Backend API Framework</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-database"></i>
+                    <h4>MySQL + Prisma</h4>
+                    <p>Database & ORM</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-html5"></i>
+                    <h4>HTML5 + CSS3</h4>
+                    <p>Frontend Structure</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fab fa-js"></i>
+                    <h4>Vanilla JavaScript</h4>
+                    <p>Client Application</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-key"></i>
+                    <h4>JWT Authentication</h4>
+                    <p>Secure Token System</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>Responsive Design</h4>
+                    <p>Mobile-First UI</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-actions">
+            <h3 style="margin-bottom: 1rem;">Quick Start Guide</h3>
+            <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+                <ol style="padding-left: 2rem;">
+                    <li style="margin: 0.5rem 0;">Start the BattleBucks API server: <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 3px;">npm run start:dev</code></li>
+                    <li style="margin: 0.5rem 0;">Open the client application by clicking "Launch Application"</li>
+                    <li style="margin: 0.5rem 0;">Register a new account or use the demo credentials</li>
+                    <li style="margin: 0.5rem 0;">Explore all features: store, inventory, characters, purchases</li>
+                    <li style="margin: 0.5rem 0;">Check the API documentation for technical details</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

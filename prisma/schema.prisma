@@ -1,0 +1,336 @@
+// This is your Prisma schema file for BattleBucks Gaming Platform
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===============================
+// CORE USER ENTITIES
+// ===============================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  refreshTokenHash String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // User wallet and profile
+  wallet            UserWallet?
+  characterProfiles CharacterProfile[]
+  purchases         Purchase[]
+  inventory         UserInventory[]
+  fulfillments      ItemFulfillment[]
+  gameProfiles      GameUserProfile[]
+
+  @@map("users")
+}
+
+model UserWallet {
+  id      String @id @default(cuid())
+  userId  String @unique
+  balance Int    @default(0) // gems balance
+  
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  walletTransactions WalletTransaction[]
+
+  @@map("user_wallets")
+}
+
+model WalletTransaction {
+  id          String            @id @default(cuid())
+  walletId    String
+  type        TransactionType
+  amount      Int
+  description String?
+  referenceId String? // Purchase ID, reward ID, etc.
+  createdAt   DateTime          @default(now())
+
+  wallet UserWallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, createdAt])
+  @@map("wallet_transactions")
+}
+
+// ===============================
+// GAME MANAGEMENT
+// ===============================
+
+model Game {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique // Short code like "COD", "VALORANT"
+  description String?
+  isActive    Boolean  @default(true)
+  apiEndpoint String?  // Game's API endpoint for item delivery
+  apiKey      String?  // Encrypted API key for game integration
+  webhookUrl  String?  // Webhook for game events
+  gameConfig  Json?    // Game-specific configuration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  storeItems        StoreItem[]
+  characterProfiles CharacterProfile[]
+  gameIntegrations  GameItemIntegration[]
+  gameUserProfiles  GameUserProfile[]
+
+  @@map("games")
+}
+
+// Game-specific user profiles for cross-game functionality
+model GameUserProfile {
+  id         String  @id @default(cuid())
+  userId     String
+  gameId     String
+  gameUserId String  // User ID in the specific game
+  gameData   Json?   // Game-specific user data
+  isActive   Boolean @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  game Game @relation(fields: [gameId], references: [id])
+
+  @@unique([userId, gameId])
+  @@index([gameId, isActive])
+  @@map("game_user_profiles")
+}
+
+// ===============================
+// STORE AND ITEMS
+// ===============================
+
+model StoreItem {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  price       Int              // Price in gems
+  category    ItemCategory
+  type        ItemType
+  deliveryType DeliveryType
+  isActive    Boolean          @default(true)
+  gameId      String?          // NULL for platform-wide items
+  imageUrl    String?
+  metadata    Json?            // Additional item-specific data
+  gameSpecificData Json?       // Game-specific configurations
+  rarity      ItemRarity?      // For game economies
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  game         Game?             @relation(fields: [gameId], references: [id])
+  purchases    PurchaseItem[]
+  inventory    UserInventory[]
+  fulfillments ItemFulfillment[]
+  gameIntegrations GameItemIntegration[]
+  equippedItems CharacterEquippedItem[]
+
+  @@index([category, isActive])
+  @@index([gameId, isActive])
+  @@index([type, isActive])
+  @@index([rarity, gameId])
+  @@map("store_items")
+}
+
+// ===============================
+// GAME-SPECIFIC INTEGRATIONS
+// ===============================
+
+model GameItemIntegration {
+  id              String @id @default(cuid())
+  gameId          String
+  itemId          String
+  gameItemId      String  // Item ID in the actual game
+  gameItemType    String  // weapon_skin, character_skin, emote, etc.
+  integrationData Json?   // Game-specific integration details
+  isActive        Boolean @default(true)
+  createdAt       DateTime @default(now())
+
+  game      Game      @relation(fields: [gameId], references: [id])
+  storeItem StoreItem @relation(fields: [itemId], references: [id])
+
+  @@unique([gameId, itemId])
+  @@index([gameId, isActive])
+  @@map("game_item_integrations")
+}
+
+// ===============================
+// PURCHASE SYSTEM
+// ===============================
+
+model Purchase {
+  id            String        @id @default(cuid())
+  userId        String
+  totalAmount   Int           // Total gems spent
+  status        PurchaseStatus
+  paymentMethod String?       // For future payment integrations
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id])
+  items         PurchaseItem[]
+  fulfillments  ItemFulfillment[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         String @id @default(cuid())
+  purchaseId String
+  itemId     String
+  quantity   Int    @default(1)
+  unitPrice  Int    // Price at time of purchase
+  totalPrice Int    // unitPrice * quantity
+
+  purchase  Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  storeItem StoreItem @relation(fields: [itemId], references: [id])
+
+  @@index([purchaseId])
+  @@map("purchase_items")
+}
+
+// ===============================
+// INVENTORY SYSTEM
+// ===============================
+
+model UserInventory {
+  id         String   @id @default(cuid())
+  userId     String
+  itemId     String
+  quantity   Int      @default(1)
+  acquiredAt DateTime @default(now())
+  usedAt     DateTime? // For consumable items
+  isConsumed Boolean  @default(false)
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeItem StoreItem @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId]) // One record per user per item (quantity tracked)
+  @@index([userId, isConsumed])
+  @@map("user_inventory")
+}
+
+// ===============================
+// CHARACTER PROFILES & CUSTOMIZATION
+// ===============================
+
+model CharacterProfile {
+  id       String  @id @default(cuid())
+  userId   String
+  gameId   String?  // NULL for platform-wide profile
+  name     String
+  isActive Boolean @default(true)
+  metadata Json?   // Profile-specific data like avatar settings
+
+  user           User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game           Game?                    @relation(fields: [gameId], references: [id])
+  equippedItems  CharacterEquippedItem[]
+
+  @@index([userId, isActive])
+  @@map("character_profiles")
+}
+
+model CharacterEquippedItem {
+  id        String @id @default(cuid())
+  profileId String
+  itemId    String
+  slot      String? // e.g., "weapon_skin", "avatar_hat", "emote_1"
+  equippedAt DateTime @default(now())
+
+  profile   CharacterProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  storeItem StoreItem        @relation(fields: [itemId], references: [id])
+
+  @@unique([profileId, slot]) // One item per slot per profile
+  @@index([profileId])
+  @@map("character_equipped_items")
+}
+
+// ===============================
+// FULFILLMENT & DELIVERY SYSTEM
+// ===============================
+
+model ItemFulfillment {
+  id           String            @id @default(cuid())
+  purchaseId   String
+  userId       String
+  itemId       String
+  status       FulfillmentStatus
+  deliveryType DeliveryType
+  deliveryData Json?             // Email addresses, Shopify order IDs, etc.
+  attempts     Int               @default(0)
+  lastAttempt  DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  purchase  Purchase  @relation(fields: [purchaseId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  storeItem StoreItem @relation(fields: [itemId], references: [id])
+
+  @@index([status, deliveryType])
+  @@index([userId, status])
+  @@map("item_fulfillments")
+}
+
+// ===============================
+// ENUMS
+// ===============================
+
+enum TransactionType {
+  CREDIT    // Adding gems (purchase, reward)
+  DEBIT     // Spending gems (store purchase)
+  REFUND    // Refunding gems
+}
+
+enum ItemCategory {
+  SKIN              // Game skins, avatars
+  DIGITAL_REWARD    // Vouchers, coupons
+  PHYSICAL_MERCH    // T-shirts, collectibles
+  UTILITY           // Name changes, extra lives
+  CONSUMABLE        // Temporary items
+}
+
+enum ItemType {
+  CONSUMABLE        // Can be used/consumed
+  NON_CONSUMABLE    // Permanent items
+}
+
+enum DeliveryType {
+  IN_GAME          // Added to game inventory
+  EMAIL            // Sent via email
+  SHOPIFY          // Physical goods via Shopify
+  FUNCTIONAL       // Instant application (gems, credits)
+}
+
+enum PurchaseStatus {
+  PENDING          // Purchase initiated
+  COMPLETED        // Payment processed
+  FAILED           // Payment failed
+  REFUNDED         // Purchase refunded
+}
+
+enum FulfillmentStatus {
+  PENDING          // Awaiting fulfillment
+  PROCESSING       // Being processed
+  COMPLETED        // Successfully fulfilled
+  FAILED           // Fulfillment failed
+  RETRY            // Waiting for retry
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+  MYTHIC
+}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BattleBucks - Launch Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .launch-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            color: #ffd700;
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+        
+        .demo-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .demo-info h3 {
+            color: #ffd700;
+            margin-top: 0;
+        }
+        
+        .launch-btn {
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: black;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+        
+        .launch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .status.success { background: rgba(0, 255, 0, 0.2); }
+        .status.error { background: rgba(255, 0, 0, 0.2); }
+        .status.info { background: rgba(0, 0, 255, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="launch-container">
+        <h1><i style="font-style: normal;">🎮</i> BattleBucks</h1>
+        <p class="subtitle">Gaming Platform & Marketplace</p>
+        
+        <div class="demo-info">
+            <h3>Demo Account</h3>
+            <p><strong>Email:</strong> demo@battlebucks.com</p>
+            <p><strong>Password:</strong> demo123</p>
+            <p><strong>Starting Gems:</strong> 4500</p>
+        </div>
+        
+        <div id="status" class="status info">
+            <p>Checking server connection...</p>
+        </div>
+        
+        <a href="index.html" class="launch-btn" id="launchBtn">Launch BattleBucks Client</a>
+        
+        <div style="margin-top: 40px; opacity: 0.7; font-size: 0.9rem;">
+            <p>Server: <span id="serverUrl">http://localhost:3000</span></p>
+            <p>API Docs: <a href="http://localhost:3000/api/docs" target="_blank" style="color: #ffd700;">http://localhost:3000/api/docs</a></p>
+        </div>
+    </div>
+
+    <script>
+        async function checkServerStatus() {
+            const statusDiv = document.getElementById('status');
+            const launchBtn = document.getElementById('launchBtn');
+            
+            try {
+                statusDiv.textContent = 'Checking server...';
+                statusDiv.className = 'status info';
+                
+                const response = await fetch('http://localhost:3000/api/v1');
+                
+                if (response.ok) {
+                    // Server is responding, try to parse JSON or fallback to text
+                    try {
+                        const data = await response.json();
+                        statusDiv.innerHTML = '<p>✅ Server is running</p><p>API Version: ' + (data.version || 'v1') + '</p>';
+                    } catch {
+                        // If not JSON, server is still running
+                        statusDiv.innerHTML = '<p>✅ Server is running</p><p>Status: Connected</p>';
+                    }
+                    statusDiv.className = 'status success';
+                    launchBtn.style.display = 'inline-block';
+                } else {
+                    throw new Error('Server responded with error');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<p>❌ Server is not running</p><p>Please start the server first: <code>npm run start:dev</code></p>';
+                statusDiv.className = 'status error';
+                launchBtn.style.display = 'none';
+            }
+        }
+        
+        // Check server status on page load
+        checkServerStatus();
+        
+        // Recheck every 5 seconds
+        setInterval(checkServerStatus, 5000);
+    </script>
+</body>
+</html>

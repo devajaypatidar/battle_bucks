@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BattleBucks - Gaming Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-gamepad"></i>
+                <span>BattleBucks</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="#store" class="nav-link" data-page="store">
+                    <i class="fas fa-store"></i> Store
+                </a>
+                <a href="#inventory" class="nav-link" data-page="inventory">
+                    <i class="fas fa-box"></i> Inventory
+                </a>
+                <a href="#characters" class="nav-link" data-page="characters">
+                    <i class="fas fa-user-ninja"></i> Characters
+                </a>
+                <a href="#purchases" class="nav-link" data-page="purchases">
+                    <i class="fas fa-receipt"></i> Purchases
+                </a>
+                <div class="nav-user">
+                    <span class="username" id="usernameDisplay">Guest</span>
+                    <span class="gems" id="gemBalance">0 Gems</span>
+                    <button class="btn-logout" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        
+        <!-- Authentication Page -->
+        <div class="page" id="authPage" style="display: block;">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <h1><i class="fas fa-gamepad"></i> BattleBucks</h1>
+                    <p class="auth-subtitle">Your Gaming Marketplace</p>
+                    
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">Login</button>
+                        <button class="auth-tab" data-tab="register">Register</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form class="auth-form" id="loginForm">
+                        <div class="form-group">
+                            <input type="email" id="loginEmail" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="loginPassword" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Login</button>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form class="auth-form" id="registerForm" style="display: none;">
+                        <div class="form-group">
+                            <input type="text" id="registerUsername" placeholder="Username" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="registerEmail" placeholder="Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="registerPassword" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div class="page" id="dashboardPage" style="display: none;">
+            <div class="page-header">
+                <h2><i class="fas fa-home"></i> Dashboard</h2>
+            </div>
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <i class="fas fa-coins"></i>
+                    <div class="stat-content">
+                        <h3 id="dashGemBalance">0</h3>
+                        <p>Total Gems</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-box"></i>
+                    <div class="stat-content">
+                        <h3 id="dashInventoryCount">0</h3>
+                        <p>Items Owned</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-user-ninja"></i>
+                    <div class="stat-content">
+                        <h3 id="dashCharacterCount">0</h3>
+                        <p>Characters</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <div class="stat-content">
+                        <h3 id="dashPurchaseCount">0</h3>
+                        <p>Purchases</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-sections">
+                <div class="section">
+                    <h3>Recent Purchases</h3>
+                    <div id="recentPurchases" class="purchase-list">
+                        <div class="loading">Loading purchases...</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Featured Store Items</h3>
+                    <div id="featuredItems" class="item-grid">
+                        <div class="loading">Loading items...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Store Page -->
+        <div class="page" id="storePage" style="display: none;">
+            <div class="page-header">
+                <h2><i class="fas fa-store"></i> Store</h2>
+                <div class="store-filters">
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="SKIN">Skins</option>
+                        <option value="DIGITAL_REWARD">Digital Rewards</option>
+                        <option value="PHYSICAL_MERCH">Physical Merch</option>
+                        <option value="UTILITY">Utilities</option>
+                        <option value="CONSUMABLE">Consumables</option>
+                    </select>
+                    <select id="rarityFilter">
+                        <option value="">All Rarities</option>
+                        <option value="COMMON">Common</option>
+                        <option value="UNCOMMON">Uncommon</option>
+                        <option value="RARE">Rare</option>
+                        <option value="EPIC">Epic</option>
+                        <option value="LEGENDARY">Legendary</option>
+                        <option value="MYTHIC">Mythic</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Search items...">
+                </div>
+            </div>
+            <div id="storeItems" class="item-grid">
+                <div class="loading">Loading store items...</div>
+            </div>
+            <div class="pagination" id="storePagination"></div>
+        </div>
+
+        <!-- Inventory Page -->
+        <div class="page" id="inventoryPage" style="display: none;">
+            <div class="page-header">
+                <h2><i class="fas fa-box"></i> Inventory</h2>
+                <div class="inventory-summary" id="inventorySummary">
+                    <div class="loading">Loading inventory summary...</div>
+                </div>
+            </div>
+            <div id="inventoryItems" class="item-grid">
+                <div class="loading">Loading inventory...</div>
+            </div>
+        </div>
+
+        <!-- Characters Page -->
+        <div class="page" id="charactersPage" style="display: none;">
+            <div class="page-header">
+                <h2><i class="fas fa-user-ninja"></i> Characters</h2>
+                <button class="btn-primary" id="createCharacterBtn">
+                    <i class="fas fa-plus"></i> Create Character
+                </button>
+            </div>
+            <div id="characterProfiles" class="character-grid">
+                <div class="loading">Loading characters...</div>
+            </div>
+        </div>
+
+        <!-- Purchases Page -->
+        <div class="page" id="purchasesPage" style="display: none;">
+            <div class="page-header">
+                <h2><i class="fas fa-receipt"></i> Purchase History</h2>
+                <div class="purchase-summary" id="purchaseSummary">
+                    <div class="loading">Loading purchase summary...</div>
+                </div>
+            </div>
+            <div id="purchaseHistory" class="purchase-list">
+                <div class="loading">Loading purchase history...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    
+    <!-- Purchase Modal -->
+    <div class="modal" id="purchaseModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Purchase Item</h3>
+            <div class="purchase-details" id="purchaseDetails"></div>
+            <div class="purchase-actions">
+                <button class="btn-primary" id="confirmPurchaseBtn">Confirm Purchase</button>
+                <button class="btn-secondary" id="cancelPurchaseBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Modal -->
+    <div class="modal" id="characterModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="characterModalTitle">Create Character</h3>
+            <form id="characterForm">
+                <div class="form-group">
+                    <input type="text" id="characterName" placeholder="Character Name" required>
+                </div>
+                <div class="form-group">
+                    <select id="characterGame">
+                        <option value="">Platform-wide Character</option>
+                        <!-- Game options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Save Character</button>
+                    <button type="button" class="btn-secondary" id="cancelCharacterBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Item Detail Modal -->
+    <div class="modal" id="itemDetailModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="itemDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Equipment Modal -->
+    <div class="modal" id="equipmentModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Equip Item</h3>
+            <div id="equipmentContent"></div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Processing...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
